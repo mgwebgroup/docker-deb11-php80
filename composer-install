@@ -1,0 +1,27 @@
+#! /bin/bash
+COMPOSER_BUILD_DIR=/tmp/composer-build
+
+git clone https://github.com/composer/composer.git --branch 2.5.4  $COMPOSER_BUILD_DIR
+
+cd $COMPOSER_BUILD_DIR
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+EXPECTED_CHECKSUM=$(curl https://composer.github.io/installer.sig)
+ACTUAL_CHECKSUM=$(php -r "echo hash_file('sha384', 'composer-setup.php');")
+if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+  >&2 echo 'ERROR: Invalid installer checksum'
+  rm composer-setup.php
+  exit 1
+fi
+
+php composer-setup.php --quiet
+php -r "unlink('composer-setup.php');"
+
+./composer.phar install
+
+curl https://raw.githubusercontent.com/politsin/snipets/master/patch/composer.patch > composer.patch
+patch -p1 < composer.patch
+php -d phar.readonly=0 bin/compile
+mv composer.phar /usr/local/bin/composer && chmod u+x /usr/local/bin/composer
+
+cd /tmp && rm -rf $COMPOSER_BUILD_DIR
