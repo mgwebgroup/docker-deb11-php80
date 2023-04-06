@@ -15,4 +15,6 @@ COPY ssl-cert-snakeoil.key /etc/ssl/private/
 RUN a2ensite default-ssl
 COPY default-ssl.conf /etc/apache2/sites-available/
 
+RUN /usr/local/bin/docker-php-ext-install pdo_mysql
+
 CMD ["apache2-foreground"]
