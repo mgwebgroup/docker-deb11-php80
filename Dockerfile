@@ -16,5 +16,7 @@ RUN a2ensite default-ssl
 COPY default-ssl.conf /etc/apache2/sites-available/
 
 RUN /usr/local/bin/docker-php-ext-install pdo_mysql
+RUN apt-get install -y libpng-dev
+RUN /usr/local/bin/docker-php-ext-install gd
 
 CMD ["apache2-foreground"]
